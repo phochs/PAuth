@@ -1,41 +1,66 @@
 <?php
 	class Auth {
 		public function login($p_sUsername, $p_sPassword) {
+			$oToken = new Token();
+			$oToken->deleteOldTokens(); // As a "comminity service", we'll delete tokens that get left behind and are expired as often as possible
+			
+			$this->logout(); // If someone is logged in, let's log them out
+			
 			// First, check if the user actually exists
-			$oUser = $this->getUser($p_sUsername);
+			$oUser = $this->_getUser($p_sUsername);
 			if(!$oUser)
 				return false;
 			
 			// Next, we will decrypt the salt and try to recreate the hash from the database
-			$bCheck = $this->checkPassword($oUser, $p_sPassword);
+			$bCheck = $this->_checkPassword($oUser, $p_sPassword);
 			if(!$bCheck)
 				return false;
 			
 			// The user exists and has filled in the right password, yay! Now we generate a new hash for the password and store in in the database (for extra security)
-			$this->regeneratePassword($oUser, $p_sPassword);
+			$this->_regeneratePassword($oUser, $p_sPassword);
 			unset($p_sPassword);
 			
 			// Now we are ready to generate the token and store it in a cookie
-			$this->createToken($oUser->userId);
+			$this->_createToken($oUser->userId);
 			
 			// That was it, we're done here!
 			return true;
 		}
 		
 		public function checkLogin() {
+			$oToken = new Token();
+			$oToken->deleteOldTokens();
+			
 			// This method will return a user object if all goes well, or false if not
 			
 			// First, check it both tokens are present
-			$bResult = $this->checkCookies();
+			$bResult = $this->_checkCookies();
 			if(!$bResult)
 				return false;
 			
 			// Now we will load the token from the database and check it
-			$oUser = $this->checkToken();
+			$oUser = $this->_checkToken();
 			return $oUser;
 		}
 		
-		protected function getUser($p_sUsername) {
+		public function logout() {
+			$oToken = new Token();
+			$oToken->deleteOldTokens();
+			
+			// Firstly, check if the cookies are there. If not, we don't need to logout anyone
+			$bCookies = $this->checkLogin();
+			
+			// Now delete the token
+			if($bCookies) {
+				$oToken = new Token();
+				$oToken->loadToken($_COOKIE['sha_token_ID2']);
+				$oToken->deleteToken();
+			}
+			
+			return true;
+		}
+		
+		protected function _getUser($p_sUsername) {
 			$oUser = new User();
 			$bResult = $oUser->findUser($p_sUsername);
 			
@@ -45,7 +70,7 @@
 			return $oUser;
 		}
 		
-		protected function checkPassword(&$p_oUser, $p_sPassword) {
+		protected function _checkPassword(&$p_oUser, $p_sPassword) {
 			$oAES = new AES();
 			$sSalt = $oAES->decrypt($p_oUser->salt, $p_sPassword);
 			
@@ -59,7 +84,7 @@
 			return false;
 		}
 		
-		protected function regeneratePassword(&$p_oUser, $p_sPassword) {
+		protected function _regeneratePassword(&$p_oUser, $p_sPassword) {
 			$oBCrypt = new BCrypt();
 			$p_oUser->password = $oBCrypt->genPassword($p_sPassword);
 			
@@ -70,7 +95,7 @@
 			$p_oUser->saveUser();
 		}
 		
-		protected function createToken($p_sUserId) {
+		protected function _createToken($p_sUserId) {
 			$oToken = new Token();
 			$sUserToken = $oToken->genToken($p_sUserId);
 			$oToken->saveToken();
@@ -79,7 +104,7 @@
 			setcookie('sha_token_ID2', $sDBToken, 0, '/');
 		}
 		
-		protected function checkCookies() {
+		protected function _checkCookies() {
 			if(!isset($_COOKIE['sha_token_ID1']) || !isset($_COOKIE['sha_token_ID2']))
 				return false;
 			
@@ -89,15 +114,18 @@
 			return true;
 		}
 		
-		protected function checkToken() {
+		protected function _checkToken() {
 			$oToken = new Token();
 			$bSuccess = $oToken->loadToken($_COOKIE['sha_token_ID2']);
 			if(!$bSuccess)
 				return false;
 			
 			$vReturn = $oToken->checkToken($_COOKIE['sha_token_ID1']);
-			if($vReturn === false)
+			if($vReturn === false) {
 				$oToken->deleteToken();
+				setcookie('sha_token_ID1', '', -3600);
+				setcookie('sha_token_ID2', '', -3600);
+			}
 			
 			//All is good, now update the time
 			$oToken->expires = time() + 1800;

@@ -42,19 +42,9 @@
 		protected $m_sName;
 		
 		/**
-		 * @var string $m_sGender the person's gender. It can be m (male), f (female) or c (company)
-		 */
-		protected $m_sGender;
-		
-		/**
 		 * @var integer $m_iCreationTime when the user was created
 		 */
 		protected $m_iCreationTime;
-		
-		/**
-		 * @var integer $m_iLastVisit when the user last logged in onto the system
-		 */
-		protected $m_iLastVisit;
 		
 		public function __construct($p_sUserId=null) {
 			$this->reset();
@@ -65,7 +55,7 @@
 		}
 		
 		public function __get($p_sVar) {
-			$aWhitelist = array('userId' => 'm_sUserId', 'password' => 'm_sPassword', 'salt' => 'm_sSalt', 'username' => 'm_sUsername', 'email' => 'm_sEmail', 'name' => 'm_sName', 'gender' => 'm_sGender', 'creationTime' => 'm_iCreationTime', 'lastVisit' => 'm_iLastVisit');
+			$aWhitelist = array('userId' => 'm_sUserId', 'password' => 'm_sPassword', 'salt' => 'm_sSalt', 'username' => 'm_sUsername', 'email' => 'm_sEmail', 'name' => 'm_sName', 'creationTime' => 'm_iCreationTime');
 			
 			$sVar = htmlspecialchars($p_sVar);
 			if(array_key_exists($sVar, $aWhitelist)) {
@@ -76,7 +66,7 @@
 		}
 		
 		public function __set($p_sVar, $p_vValue) {
-			$aWhitelist = array('password' => 'm_sPassword', 'salt' => 'm_sSalt', 'username' => 'm_sUsername', 'email' => 'm_sEmail', 'name' => 'm_sName', 'gender' => 'm_sGender', 'lastVisit' => 'm_iLastVisit');
+			$aWhitelist = array('password' => 'm_sPassword', 'salt' => 'm_sSalt', 'username' => 'm_sUsername', 'email' => 'm_sEmail', 'name' => 'm_sName');
 			
 			$sVar = htmlspecialchars($p_sVar);
 			if(array_key_exists($sVar, $aWhitelist)) {
@@ -109,9 +99,7 @@
 			$this->m_sUsername = $aData['username'];
 			$this->m_sEmail = $aData['email'];
 			$this->m_sName = $aData['name'];
-			$this->m_sGender = $aData['gender'];
 			$this->m_iCreationTime = $aData['creationTime'];
-			$this->m_iLastVisit = $aData['lastVisit'];
 			
 			return true;
 		}
@@ -135,12 +123,11 @@
 			if($this->m_sUserId == '') { // Then we need to create a new user
 				$iTime = time(); // To insert into the database and into the object
 				$this->m_iCreationTime = $iTime;
-				$this->m_iLastVisit = $iTime;
 				$this->m_sUserId = guidv4();
 				
-				$sQuery = 'INSERT INTO user (userId, password, salt, username, email, name, gender, creationTime, lastVisit) VALUES (:userId, :password, :salt, :username, :email, :name, :gender, :creationTime, :lastVisit)';
+				$sQuery = 'INSERT INTO user (userId, password, salt, username, email, name, creationTime) VALUES (:userId, :password, :salt, :username, :email, :name, :creationTime)';
 			} else { // Otherwise we need to update an existing user
-				$sQuery = 'UPDATE user SET password = :password, salt = :salt, username = :username, email = :email, name = :name, gender = :gender, creationTime = :creationTime, lastVisit = :lastVisit WHERE userId = :userId';
+				$sQuery = 'UPDATE user SET password = :password, salt = :salt, username = :username, email = :email, name = :name, creationTime = :creationTime WHERE userId = :userId';
 			}
 			
 			$oStatement = $this->m_oDB->prepare($sQuery);
@@ -150,9 +137,7 @@
 			$oStatement->bindParam(':username', $this->m_sUsername);
 			$oStatement->bindParam(':email', $this->m_sEmail);
 			$oStatement->bindParam(':name', $this->m_sName);
-			$oStatement->bindParam(':gender', $this->m_sGender);
 			$oStatement->bindParam(':creationTime', $this->m_iCreationTime);
-			$oStatement->bindParam(':lastVisit', $this->m_iLastVisit);
 			$oStatement->execute();
 		}
 		
@@ -163,9 +148,7 @@
 			$this->m_sUsername = '';
 			$this->m_sEmail = '';
 			$this->m_sName = '';
-			$this->m_sGender = '';
 			$this->m_iCreationTime = '';
-			$this->m_iLastVisit = '';
 		}
 	}
 ?>

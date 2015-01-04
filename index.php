@@ -22,7 +22,6 @@
 	$oUser->username = 'phochs';
 	$oUser->email = 'email@example.com';
 	$oUser->name = 'My Name';
-	$oUser->gender = 'm';
 	
 	$oBCrypt = new BCrypt();
 	$oUser->password = $oBCrypt->genPassword('testPass');

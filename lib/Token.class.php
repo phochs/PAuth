@@ -133,7 +133,6 @@
 		}
 		
 		public function genToken($p_sUserId) {
-			// TODO: remove other tokens fron this IP/username
 			$sUserToken = genRandStr(255);
 			$oAES = new AES();
 			$this->m_sUserId = $oAES->encrypt($p_sUserId, $sUserToken);
@@ -196,6 +195,14 @@
 			$sQuery = 'DELETE FROM authToken WHERE token = :token';
 			$oStatement = $this->m_oDB->prepare($sQuery);
 			$oStatement->bindParam(':token', $this->m_sToken);
+			return $oStatement->execute();
+		}
+		
+		public function deleteOldTokens() {
+			$iTime = time();
+			$sQuery = 'DELETE FROM authToken WHERE expires <= :time';
+			$oStatement = $this->m_oDB->prepare($sQuery);
+			$oStatement->bindParam(':time', $iTime);
 			return $oStatement->execute();
 		}
 		
