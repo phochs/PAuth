@@ -13,8 +13,8 @@
 	</head>
 	<body>
 <?php
-	require_once('lib/Autoload.php');
-	require_once('lib/function.lib.php');
+	require_once('PAuth/Autoload.php');
+	require_once('PAuth/function.lib.php');
 	
 	// The first block of commented code registers a user. The second block performs a login. The third block checks a login
 	

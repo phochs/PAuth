@@ -1,6 +1,6 @@
 <?php
-	require_once('lib/function.lib.php');
-	require_once('lib/Autoload.php');
+	require_once('PAuth/function.lib.php');
+	require_once('PAuth/Autoload.php');
 	
 	var_dump(Settings::get('database.host'));
 ?>
