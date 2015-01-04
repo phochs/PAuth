@@ -58,15 +58,12 @@
 		public function genPassword($p_sPassword, $p_sSalt=null) {
 			// This function can be used to generate and to check a password.
 			
-			// TODO: generate a hash for every time this code is installed
-			$sPepper = 'cvkSqfq7Z+lndnYe7kj+_Zn;IrW5vnBs';
-			
 			$this->m_sSalt = $p_sSalt;
 			
 			$sPassword = $this->genHash($p_sPassword);
 			unset($p_sPassword);
 			
-			$sPassword = hash('sha512', $sPepper.$sPassword);
+			$sPassword = hash(Settings::get('hashing.password2ndHashAlg'), Settings::get('hashing.pepper').$sPassword);
 			return $sPassword;
 		}
 	}

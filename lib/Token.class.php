@@ -137,31 +137,31 @@
 			$oAES = new AES();
 			$this->m_sUserId = $oAES->encrypt($p_sUserId, $sUserToken);
 			if(Settings::get('general.IPHashing'))
-				$this->m_sIP = hash('sha512', $_SERVER['REMOTE_ADDR']);
+				$this->m_sIP = hash(Settings::get('hashing.tokenHashAlg'), $_SERVER['REMOTE_ADDR']);
 			else
 				$this->m_sIP = $_SERVER['REMOTE_ADDR'];
 			
 			if(isset($_SERVER['HTTP_VIA'])) {
 				if(Settings::get('general.IPHashing'))
-					$this->m_sIPVia = hash('sha512', $_SERVER['HTTP_VIA']);
+					$this->m_sIPVia = hash(Settings::get('hashing.tokenHashAlg'), $_SERVER['HTTP_VIA']);
 				else
 					$this->m_sIPVia = $_SERVER['HTTP_VIA'];
 			}
 			
 			if(isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
 				if(Settings::get('general.IPHashing'))
-					$this->m_sIPForward = hash('sha512', $_SERVER['HTTP_X_FORWARDED_FOR']);
+					$this->m_sIPForward = hash(Settings::get('hashing.tokenHashAlg'), $_SERVER['HTTP_X_FORWARDED_FOR']);
 				else
 					$this->m_sIPForward = $_SERVER['HTTP_X_FORWARDED_FOR'];
 			}
 			
 			if(isset($_SERVER['HTTP_USER_AGENT']))
-				$this->m_sUserAgent = hash('sha512', $_SERVER['HTTP_USER_AGENT']);
+				$this->m_sUserAgent = hash(Settings::get('hashing.tokenHashAlg'), $_SERVER['HTTP_USER_AGENT']);
 			
 			if(isset($_SERVER['HTTP_ACCEPT_LANGUAGE']))
-				$this->m_sUserLanguage = hash('sha512', $_SERVER['HTTP_ACCEPT_LANGUAGE']);
+				$this->m_sUserLanguage = hash(Settings::get('hashing.tokenHashAlg'), $_SERVER['HTTP_ACCEPT_LANGUAGE']);
 			
-			$this->m_sHTTPAccept = hash('sha512', $_SERVER['HTTP_ACCEPT']);
+			$this->m_sHTTPAccept = hash(Settings::get('hashing.tokenHashAlg'), $_SERVER['HTTP_ACCEPT']);
 			$this->m_iExpires = time() + Settings::get('login.expireTime');
 			
 			return $sUserToken;
@@ -169,14 +169,14 @@
 		
 		public function checkToken($p_sUserToken) {
 			if(Settings::get('general.IPHashing'))
-				$sIP = @hash('sha512', $_SERVER['REMOTE_ADDR']);
+				$sIP = @hash(Settings::get('hashing.tokenHashAlg'), $_SERVER['REMOTE_ADDR']);
 			else
 				$sIP = @$_SERVER['REMOTE_ADDR'];
 			if($this->m_sIP != $sIP)
 				return false;
 			
 			if(Settings::get('general.IPHashing'))
-				$sIPVia = @hash('sha512', $_SERVER['HTTP_VIA']);
+				$sIPVia = @hash(Settings::get('hashing.tokenHashAlg'), $_SERVER['HTTP_VIA']);
 			else
 				$sIPVia = @$_SERVER['HTTP_VIA'];
 			if(!empty($this->m_sIPVia) || isset($_SERVER['HTTP_VIA']))
@@ -184,7 +184,7 @@
 					return false;
 			
 			if(Settings::get('general.IPHashing'))
-				$sIPForward = @hash('sha512', $_SERVER['HTTP_X_FORWARDED_FOR']);
+				$sIPForward = @hash(Settings::get('hashing.tokenHashAlg'), $_SERVER['HTTP_X_FORWARDED_FOR']);
 			else
 				$sIPForward = @$_SERVER['HTTP_X_FORWARDED_FOR'];
 			if(!empty($this->m_sIPForward) || isset($_SERVER['HTTP_X_FORWARDED_FOR']))
@@ -192,14 +192,14 @@
 					return false;
 			
 			if(!empty($this->m_sUserAgent) || isset($_SERVER['HTTP_USER_AGENT']))
-				if($this->m_sUserAgent != hash('sha512', $_SERVER['HTTP_USER_AGENT']))
+				if($this->m_sUserAgent != hash(Settings::get('hashing.tokenHashAlg'), $_SERVER['HTTP_USER_AGENT']))
 					return false;
 			
 			if(!empty($this->m_sUserLanguage) || isset($_SERVER['HTTP_ACCEPT_LANGUAGE']))
-				if($this->m_sUserLanguage != hash('sha512', $_SERVER['HTTP_ACCEPT_LANGUAGE']))
+				if($this->m_sUserLanguage != hash(Settings::get('hashing.tokenHashAlg'), $_SERVER['HTTP_ACCEPT_LANGUAGE']))
 					return false;
 			
-			if($this->m_sHTTPAccept != hash('sha512', $_SERVER['HTTP_ACCEPT']))
+			if($this->m_sHTTPAccept != hash(Settings::get('hashing.tokenHashAlg'), $_SERVER['HTTP_ACCEPT']))
 				return false;
 			
 			if($this->m_iExpires < time())
