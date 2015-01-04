@@ -14,6 +14,28 @@
 	<body>
 <?php
 	require_once('lib/Autoload.php');
+	require_once('lib/function.lib.php');
+	
+	// The first block of commented code registers a user. The second block performs a login. The third block checks a login
+	
+	/*$oUser = new User();
+	$oUser->username = 'phochs';
+	$oUser->email = 'email@example.com';
+	$oUser->name = 'My Name';
+	$oUser->gender = 'm';
+	
+	$oBCrypt = new BCrypt();
+	$oUser->password = $oBCrypt->genPassword('testPass');
+	
+	$oAES = new AES();
+	$oUser->salt = $oAES->encrypt($oBCrypt->salt, 'testPass');
+	$oUser->saveUser();*/
+	
+	/*$oAuth = new Auth();
+	var_dump($oAuth->login('phochs', 'testPass'));*/
+	
+	/*$oAuth = new Auth();
+	var_dump($oAuth->checkLogin());*/
 ?>
 	</body>
 </html>

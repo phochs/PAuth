@@ -132,6 +132,73 @@
 			$oStatement->execute();
 		}
 		
+		public function genToken($p_sUserId) {
+			// TODO: remove other tokens fron this IP/username
+			$sUserToken = genRandStr(255);
+			$oAES = new AES();
+			$this->m_sUserId = $oAES->encrypt($p_sUserId, $sUserToken);
+			$this->m_sIP = hash('sha512', $_SERVER['REMOTE_ADDR']);
+			
+			if(isset($_SERVER['HTTP_VIA']))
+				$this->m_sIPVia = hash('sha512', $_SERVER['HTTP_VIA']);
+			
+			if(isset($_SERVER['HTTP_X_FORWARDED_FOR']))
+				$this->m_sIPForward = hash('sha512', $_SERVER['HTTP_X_FORWARDED_FOR']);
+			
+			if(isset($_SERVER['HTTP_USER_AGENT']))
+				$this->m_sUserAgent = hash('sha512', $_SERVER['HTTP_USER_AGENT']);
+			
+			if(isset($_SERVER['HTTP_ACCEPT_LANGUAGE']))
+				$this->m_sUserLanguage = hash('sha512', $_SERVER['HTTP_ACCEPT_LANGUAGE']);
+			$this->m_sHTTPAccept = hash('sha512', $_SERVER['HTTP_ACCEPT']);
+			$this->m_iExpires = time() + 1800; // Half an hour
+			
+			return $sUserToken;
+		}
+		
+		public function checkToken($p_sUserToken) {
+			if($this->m_sIP != hash('sha512', $_SERVER['REMOTE_ADDR']))
+				return false;
+			
+			if(!empty($this->m_sIPVia) || isset($_SERVER['HTTP_VIA']))
+				if($this->m_sIPVia != hash('sha512', $_SERVER['HTTP_VIA']))
+					return false;
+			
+			if(!empty($this->m_sIPForward) || isset($_SERVER['HTTP_X_FORWARDED_FOR']))
+				if($this->m_sIPForward != hash('sha512', $_SERVER['HTTP_X_FORWARDED_FOR']))
+					return false;
+			
+			if(!empty($this->m_sUserAgent) || isset($_SERVER['HTTP_USER_AGENT']))
+				if($this->m_sUserAgent != hash('sha512', $_SERVER['HTTP_USER_AGENT']))
+					return false;
+			
+			if(!empty($this->m_sUserLanguage) || isset($_SERVER['HTTP_ACCEPT_LANGUAGE']))
+				if($this->m_sUserLanguage != hash('sha512', $_SERVER['HTTP_ACCEPT_LANGUAGE']))
+					return false;
+			
+			if($this->m_sHTTPAccept != hash('sha512', $_SERVER['HTTP_ACCEPT']))
+				return false;
+			
+			if($this->m_iExpires < time())
+				return false;
+			
+			$oAES = new AES();
+			$sUserId = $oAES->decrypt($this->m_sUserId, $p_sUserToken);
+			$oUser = new User();
+			$bSuccess = $oUser->loadUser($sUserId);
+			if($bSuccess)
+				return $oUser;
+			
+			return false;
+		}
+		
+		public function deleteToken() {
+			$sQuery = 'DELETE FROM authToken WHERE token = :token';
+			$oStatement = $this->m_oDB->prepare($sQuery);
+			$oStatement->bindParam(':token', $this->m_sToken);
+			return $oStatement->execute();
+		}
+		
 		public function reset() {
 			$this->m_sToken = '';
 			$this->m_sUserId = '';

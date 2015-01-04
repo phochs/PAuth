@@ -46,12 +46,28 @@
 			$this->m_sSalt = $sSalt;
 		}
 		
-		public function getHash($p_sPassword) {
+		public function genHash($p_sPassword) {
 			if(empty($this->m_sSalt))
 				$this->gensalt();
 			
 			$sHash = crypt($p_sPassword, '$2y$'.$this->m_iRounds.'$'.$this->m_sSalt);
+			unset($p_sPassword);
 			return $sHash;
+		}
+		
+		public function genPassword($p_sPassword, $p_sSalt=null) {
+			// This function can be used to generate and to check a password.
+			
+			// TODO: generate a hash for every time this code is installed
+			$sPepper = 'cvkSqfq7Z+lndnYe7kj+_Zn;IrW5vnBs';
+			
+			$this->m_sSalt = $p_sSalt;
+			
+			$sPassword = $this->genHash($p_sPassword);
+			unset($p_sPassword);
+			
+			$sPassword = hash('sha512', $sPepper.$sPassword);
+			return $sPassword;
 		}
 	}
 ?>
