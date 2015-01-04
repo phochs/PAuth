@@ -106,7 +106,20 @@
 		
 		public function findUser($p_sUsername) {
 			// The username can be either the real username of the email address (couldn't think of a better variable name :( )
-			$sQuery = 'SELECT userId FROM user WHERE username = :username OR email = :username';
+			$sQuery = 'SELECT userId FROM user WHERE';
+			
+			$aWhere = array();
+			if(Settings::get('login.allowUsernameLogin'))
+				$aWhere[] = 'username = :username';
+			if(Settings::get('login.allowEmailLogin'))
+				$aWhere[] = 'email = :username';
+			
+			if(count($aWhere) == 0)
+				return false;
+			
+			$sWhere = implode(' OR ', $aWhere);
+			$sQuery = $sQuery.' '.$sWhere;
+			
 			$oStatement = $this->m_oDB->prepare($sQuery);
 			$oStatement->bindParam(':username', $p_sUsername);
 			$oStatement->execute();

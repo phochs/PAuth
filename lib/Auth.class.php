@@ -16,8 +16,9 @@
 			if(!$bCheck)
 				return false;
 			
-			// The user exists and has filled in the right password, yay! Now we generate a new hash for the password and store in in the database (for extra security)
-			$this->_regeneratePassword($oUser, $p_sPassword);
+			// The user exists and has filled in the right password, yay! Now we generate a new hash for the password and store in in the database (optional, for extra security)
+			if(Settings::get('general.rehashAtLogon') == true)
+				$this->_regeneratePassword($oUser, $p_sPassword);
 			unset($p_sPassword);
 			
 			// Now we are ready to generate the token and store it in a cookie
@@ -123,8 +124,8 @@
 			$vReturn = $oToken->checkToken($_COOKIE['sha_token_ID1']);
 			if($vReturn === false) {
 				$oToken->deleteToken();
-				setcookie('sha_token_ID1', '', -3600);
-				setcookie('sha_token_ID2', '', -3600);
+				setcookie('sha_token_ID1', '', time()-3600);
+				setcookie('sha_token_ID2', '', time()-3600);
 			}
 			
 			//All is good, now update the time
