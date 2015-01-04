@@ -1,4 +1,5 @@
 <?php
+	namespace PAuth;
 	class BCrypt {
 		protected $m_iRounds;
 		

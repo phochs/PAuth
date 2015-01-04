@@ -18,26 +18,26 @@
 	
 	// The first block of commented code registers a user. The second block performs a login. The third block checks a login
 	
-	/*$oUser = new User();
+	/*$oUser = new PAuth\User();
 	$oUser->username = 'phochs';
 	$oUser->email = 'email@example.com';
 	$oUser->name = 'My Name';
 	
-	$oBCrypt = new BCrypt();
+	$oBCrypt = new PAuth\BCrypt();
 	$oUser->password = $oBCrypt->genPassword('testPass');
 	
 	if(Settings::get('hashing.encryptSalt')) {
-		$oAES = new AES();
+		$oAES = new PAuth\AES();
 		$oUser->salt = $oAES->encrypt($oBCrypt->salt, 'testPass');
 	} else {
 		$oUser->salt = $oBCrypt->salt;
 	}
 	$oUser->saveUser();*/
 	
-	/*$oAuth = new Auth();
+	/*$oAuth = new PAuth\Auth();
 	var_dump($oAuth->login('phochs', 'testPass'));*/
 	
-	/*$oAuth = new Auth();
+	/*$oAuth = new PAuth\Auth();
 	var_dump($oAuth->checkLogin());*/
 ?>
 	</body>

@@ -1,4 +1,5 @@
 <?php
+	namespace PAuth;
 	class Token {
 		/**
 		 * @var object $m_oDB the database connection

@@ -1,4 +1,5 @@
 <?php
+	namespace PAuth;
 	class Auth {
 		public function login($p_sUsername, $p_sPassword) {
 			$oToken = new Token();

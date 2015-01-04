@@ -1,4 +1,5 @@
 <?php
+	namespace PAuth;
 	/**
 	 * User manages the the user table in the database
 	 * 

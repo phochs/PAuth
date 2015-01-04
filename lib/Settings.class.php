@@ -1,4 +1,5 @@
 <?php
+	namespace PAuth;
 	abstract class Settings {
 		protected static $m_aSettings = array();
 		

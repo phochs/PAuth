@@ -1,4 +1,5 @@
 <?php
+	namespace PAuth;
 	/**
 	 * Source: https://stackoverflow.com/questions/3422759/php-aes-encrypt-decrypt
 	 */
