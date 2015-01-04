@@ -34,8 +34,8 @@
 	}
 	$oUser->saveUser();*/
 	
-	/*$oAuth = new PAuth\Auth();
-	var_dump($oAuth->login('phochs', 'testPass'));*/
+	$oAuth = new PAuth\Auth();
+	var_dump($oAuth->login('phochs', 'testPass'));
 	
 	/*$oAuth = new PAuth\Auth();
 	var_dump($oAuth->checkLogin());*/

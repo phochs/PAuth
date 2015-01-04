@@ -88,7 +88,7 @@
 		public function loadToken($p_sTokenId) {
 			$this->reset(); // Just to be sure...
 			
-			$sQuery = 'SELECT * FROM authToken WHERE token = :token LIMIT 1';
+			$sQuery = 'SELECT * FROM '.Settings::get('database.tblPrefix').'authToken WHERE token = :token LIMIT 1';
 			$oStatement = $this->m_oDB->prepare($sQuery);
 			$oStatement->bindParam(':token', $p_sTokenId);
 			$oStatement->execute();
@@ -115,9 +115,9 @@
 			if($this->m_sToken == '') { // Then we need to create a new user
 				$this->m_sToken = genRandStr(Settings::get('cookies.tokenLength'));
 				
-				$sQuery = 'INSERT INTO authToken (token, userId, IP, IPVia, IPForward, userAgent, userLanguage, HTTPAccept, expires) VALUES (:token, :userId, :IP, :IPVia, :IPForward, :userAgent, :userLanguage, :HTTPAccept, :expires)';
+				$sQuery = 'INSERT INTO '.Settings::get('database.tblPrefix').'authToken (token, userId, IP, IPVia, IPForward, userAgent, userLanguage, HTTPAccept, expires) VALUES (:token, :userId, :IP, :IPVia, :IPForward, :userAgent, :userLanguage, :HTTPAccept, :expires)';
 			} else { // Otherwise we need to update an existing user
-				$sQuery = 'UPDATE authToken SET userId = :userId, IP = :IP, IPVia = :IPVia, IPForward = :IPForward, userAgent = :userAgent, userLanguage = :userLanguage, HTTPAccept = :HTTPAccept, expires = :expires WHERE token = :token';
+				$sQuery = 'UPDATE '.Settings::get('database.tblPrefix').'authToken SET userId = :userId, IP = :IP, IPVia = :IPVia, IPForward = :IPForward, userAgent = :userAgent, userLanguage = :userLanguage, HTTPAccept = :HTTPAccept, expires = :expires WHERE token = :token';
 			}
 			
 			$oStatement = $this->m_oDB->prepare($sQuery);
@@ -217,7 +217,7 @@
 		}
 		
 		public function deleteToken() {
-			$sQuery = 'DELETE FROM authToken WHERE token = :token';
+			$sQuery = 'DELETE FROM '.Settings::get('database.tblPrefix').'authToken WHERE token = :token';
 			$oStatement = $this->m_oDB->prepare($sQuery);
 			$oStatement->bindParam(':token', $this->m_sToken);
 			return $oStatement->execute();
@@ -225,7 +225,7 @@
 		
 		public function deleteOldTokens() {
 			$iTime = time();
-			$sQuery = 'DELETE FROM authToken WHERE expires <= :time';
+			$sQuery = 'DELETE FROM '.Settings::get('database.tblPrefix').'authToken WHERE expires <= :time';
 			$oStatement = $this->m_oDB->prepare($sQuery);
 			$oStatement->bindParam(':time', $iTime);
 			return $oStatement->execute();

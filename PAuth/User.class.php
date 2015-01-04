@@ -84,7 +84,7 @@
 		public function loadUser($p_sUserId) {
 			$this->reset(); // Just to be sure...
 			
-			$sQuery = 'SELECT * FROM user WHERE userId = :userId LIMIT 1';
+			$sQuery = 'SELECT * FROM '.Settings::get('database.tblPrefix').'user WHERE userId = :userId LIMIT 1';
 			$oStatement = $this->m_oDB->prepare($sQuery);
 			$oStatement->bindParam(':userId', $p_sUserId);
 			$oStatement->execute();
@@ -107,7 +107,7 @@
 		
 		public function findUser($p_sUsername) {
 			// The username can be either the real username of the email address (couldn't think of a better variable name :( )
-			$sQuery = 'SELECT userId FROM user WHERE';
+			$sQuery = 'SELECT userId FROM '.Settings::get('database.tblPrefix').'user WHERE';
 			
 			$aWhere = array();
 			if(Settings::get('login.allowUsernameLogin'))
@@ -139,9 +139,9 @@
 				$this->m_iCreationTime = $iTime;
 				$this->m_sUserId = guidv4();
 				
-				$sQuery = 'INSERT INTO user (userId, password, salt, username, email, name, creationTime) VALUES (:userId, :password, :salt, :username, :email, :name, :creationTime)';
+				$sQuery = 'INSERT INTO '.Settings::get('database.tblPrefix').'user (userId, password, salt, username, email, name, creationTime) VALUES (:userId, :password, :salt, :username, :email, :name, :creationTime)';
 			} else { // Otherwise we need to update an existing user
-				$sQuery = 'UPDATE user SET password = :password, salt = :salt, username = :username, email = :email, name = :name, creationTime = :creationTime WHERE userId = :userId';
+				$sQuery = 'UPDATE '.Settings::get('database.tblPrefix').'user SET password = :password, salt = :salt, username = :username, email = :email, name = :name, creationTime = :creationTime WHERE userId = :userId';
 			}
 			
 			$oStatement = $this->m_oDB->prepare($sQuery);
