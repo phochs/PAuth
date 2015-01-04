@@ -112,7 +112,7 @@
 		
 		public function saveToken() {
 			if($this->m_sToken == '') { // Then we need to create a new user
-				$this->m_sToken = genRandStr(255);
+				$this->m_sToken = genRandStr(Settings::get('cookies.tokenLength'));
 				
 				$sQuery = 'INSERT INTO authToken (token, userId, IP, IPVia, IPForward, userAgent, userLanguage, HTTPAccept, expires) VALUES (:token, :userId, :IP, :IPVia, :IPForward, :userAgent, :userLanguage, :HTTPAccept, :expires)';
 			} else { // Otherwise we need to update an existing user
@@ -133,38 +133,62 @@
 		}
 		
 		public function genToken($p_sUserId) {
-			$sUserToken = genRandStr(255);
+			$sUserToken = genRandStr(Settings::get('cookies.tokenLength'));
 			$oAES = new AES();
 			$this->m_sUserId = $oAES->encrypt($p_sUserId, $sUserToken);
-			$this->m_sIP = hash('sha512', $_SERVER['REMOTE_ADDR']);
+			if(Settings::get('general.IPHashing'))
+				$this->m_sIP = hash('sha512', $_SERVER['REMOTE_ADDR']);
+			else
+				$this->m_sIP = $_SERVER['REMOTE_ADDR'];
 			
-			if(isset($_SERVER['HTTP_VIA']))
-				$this->m_sIPVia = hash('sha512', $_SERVER['HTTP_VIA']);
+			if(isset($_SERVER['HTTP_VIA'])) {
+				if(Settings::get('general.IPHashing'))
+					$this->m_sIPVia = hash('sha512', $_SERVER['HTTP_VIA']);
+				else
+					$this->m_sIPVia = $_SERVER['HTTP_VIA'];
+			}
 			
-			if(isset($_SERVER['HTTP_X_FORWARDED_FOR']))
-				$this->m_sIPForward = hash('sha512', $_SERVER['HTTP_X_FORWARDED_FOR']);
+			if(isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+				if(Settings::get('general.IPHashing'))
+					$this->m_sIPForward = hash('sha512', $_SERVER['HTTP_X_FORWARDED_FOR']);
+				else
+					$this->m_sIPForward = $_SERVER['HTTP_X_FORWARDED_FOR'];
+			}
 			
 			if(isset($_SERVER['HTTP_USER_AGENT']))
 				$this->m_sUserAgent = hash('sha512', $_SERVER['HTTP_USER_AGENT']);
 			
 			if(isset($_SERVER['HTTP_ACCEPT_LANGUAGE']))
 				$this->m_sUserLanguage = hash('sha512', $_SERVER['HTTP_ACCEPT_LANGUAGE']);
+			
 			$this->m_sHTTPAccept = hash('sha512', $_SERVER['HTTP_ACCEPT']);
-			$this->m_iExpires = time() + 1800; // Half an hour
+			$this->m_iExpires = time() + Settings::get('login.expireTime');
 			
 			return $sUserToken;
 		}
 		
 		public function checkToken($p_sUserToken) {
-			if($this->m_sIP != hash('sha512', $_SERVER['REMOTE_ADDR']))
+			if(Settings::get('general.IPHashing'))
+				$sIP = @hash('sha512', $_SERVER['REMOTE_ADDR']);
+			else
+				$sIP = @$_SERVER['REMOTE_ADDR'];
+			if($this->m_sIP != $sIP)
 				return false;
 			
+			if(Settings::get('general.IPHashing'))
+				$sIPVia = @hash('sha512', $_SERVER['HTTP_VIA']);
+			else
+				$sIPVia = @$_SERVER['HTTP_VIA'];
 			if(!empty($this->m_sIPVia) || isset($_SERVER['HTTP_VIA']))
-				if($this->m_sIPVia != hash('sha512', $_SERVER['HTTP_VIA']))
+				if($this->m_sIPVia != $sIPVia)
 					return false;
 			
+			if(Settings::get('general.IPHashing'))
+				$sIPForward = @hash('sha512', $_SERVER['HTTP_X_FORWARDED_FOR']);
+			else
+				$sIPForward = @$_SERVER['HTTP_X_FORWARDED_FOR'];
 			if(!empty($this->m_sIPForward) || isset($_SERVER['HTTP_X_FORWARDED_FOR']))
-				if($this->m_sIPForward != hash('sha512', $_SERVER['HTTP_X_FORWARDED_FOR']))
+				if($this->m_sIPForward != $sIPForward)
 					return false;
 			
 			if(!empty($this->m_sUserAgent) || isset($_SERVER['HTTP_USER_AGENT']))

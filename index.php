@@ -26,8 +26,12 @@
 	$oBCrypt = new BCrypt();
 	$oUser->password = $oBCrypt->genPassword('testPass');
 	
-	$oAES = new AES();
-	$oUser->salt = $oAES->encrypt($oBCrypt->salt, 'testPass');
+	if(Settings::get('hashing.encryptSalt')) {
+		$oAES = new AES();
+		$oUser->salt = $oAES->encrypt($oBCrypt->salt, 'testPass');
+	} else {
+		$oUser->salt = $oBCrypt->salt;
+	}
 	$oUser->saveUser();*/
 	
 	/*$oAuth = new Auth();

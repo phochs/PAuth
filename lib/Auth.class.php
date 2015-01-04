@@ -54,7 +54,7 @@
 			// Now delete the token
 			if($bCookies) {
 				$oToken = new Token();
-				$oToken->loadToken($_COOKIE['sha_token_ID2']);
+				$oToken->loadToken($_COOKIE[Settings::get('cookies.DBCookieName')]);
 				$oToken->deleteToken();
 			}
 			
@@ -72,8 +72,12 @@
 		}
 		
 		protected function _checkPassword(&$p_oUser, $p_sPassword) {
-			$oAES = new AES();
-			$sSalt = $oAES->decrypt($p_oUser->salt, $p_sPassword);
+			if(Settings::get('hashing.encryptSalt')) {
+				$oAES = new AES();
+				$sSalt = $oAES->decrypt($p_oUser->salt, $p_sPassword);
+			} else {
+				$sSalt = $p_oUser->salt;
+			}
 			
 			$oBCrypt = new BCrypt();
 			$sPassword = $oBCrypt->genPassword($p_sPassword, $sSalt);
@@ -89,8 +93,12 @@
 			$oBCrypt = new BCrypt();
 			$p_oUser->password = $oBCrypt->genPassword($p_sPassword);
 			
-			$oAES = new AES();
-			$p_oUser->salt = $oAES->encrypt($oBCrypt->salt, $p_sPassword);
+			if(Settings::get('hashing.encryptSalt')) {
+				$oAES = new AES();
+				$p_oUser->salt = $oAES->encrypt($oBCrypt->salt, $p_sPassword);
+			} else {
+				$p_oUser->salt = $oBCrypt->salt;
+			}
 			unset($p_sPassword);
 			
 			$p_oUser->saveUser();
@@ -101,15 +109,15 @@
 			$sUserToken = $oToken->genToken($p_sUserId);
 			$oToken->saveToken();
 			$sDBToken = $oToken->token;
-			setcookie('sha_token_ID1', $sUserToken, 0, '/'); // Why would we give them usefull names?
-			setcookie('sha_token_ID2', $sDBToken, 0, '/');
+			setcookie(Settings::get('cookies.userCookieName'), $sUserToken, 0, '/');
+			setcookie(Settings::get('cookies.DBCookieName'), $sDBToken, 0, '/');
 		}
 		
 		protected function _checkCookies() {
-			if(!isset($_COOKIE['sha_token_ID1']) || !isset($_COOKIE['sha_token_ID2']))
+			if(!isset($_COOKIE[Settings::get('cookies.userCookieName')]) || !isset($_COOKIE[Settings::get('cookies.DBCookieName')]))
 				return false;
 			
-			if(strlen($_COOKIE['sha_token_ID1']) != 255 || strlen($_COOKIE['sha_token_ID2']) != 255)
+			if(strlen($_COOKIE[Settings::get('cookies.userCookieName')]) != Settings::get('cookies.tokenLength') || strlen($_COOKIE[Settings::get('cookies.DBCookieName')]) != Settings::get('cookies.tokenLength'))
 				return false;
 			
 			return true;
@@ -117,19 +125,19 @@
 		
 		protected function _checkToken() {
 			$oToken = new Token();
-			$bSuccess = $oToken->loadToken($_COOKIE['sha_token_ID2']);
+			$bSuccess = $oToken->loadToken($_COOKIE[Settings::get('cookies.DBCookieName')]);
 			if(!$bSuccess)
 				return false;
 			
-			$vReturn = $oToken->checkToken($_COOKIE['sha_token_ID1']);
+			$vReturn = $oToken->checkToken($_COOKIE[Settings::get('cookies.userCookieName')]);
 			if($vReturn === false) {
 				$oToken->deleteToken();
-				setcookie('sha_token_ID1', '', time()-3600);
-				setcookie('sha_token_ID2', '', time()-3600);
+				setcookie(Settings::get('cookies.userCookieName'), '', time()-3600);
+				setcookie(Settings::get('cookies.DBCookieName'), '', time()-3600);
 			}
 			
 			//All is good, now update the time
-			$oToken->expires = time() + 1800;
+			$oToken->expires = time() + Settings::get('login.expireTime');
 			$oToken->saveToken();
 			
 			return $vReturn;

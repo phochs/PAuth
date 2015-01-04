@@ -4,12 +4,12 @@
 		
 		protected $m_sSalt;
 		
-		public function __construct($p_iRounds=14) {
+		public function __construct() {
 			if(CRYPT_BLOWFISH != 1) {
 				throw new Exception("Bcrypt is not supported on this server, please see the following to learn more: http://php.net/crypt");
 			}
 			
-			$this->m_iRounds = intval($p_iRounds);
+			$this->m_iRounds = intval(Settings::get('hashing.rounds'));
 		}
 		
 		public function __get($p_sVar) {
